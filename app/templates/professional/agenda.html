@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}Agenda · Agendador{% endblock %}{% block content %}
+<h1>Olá, {{ professional.name }}</h1>{% if error_message %}<div class="notice">{{ error_message }}</div>{% endif %}
+<p>Seu link para divulgar: <a href="{{ public_url }}">{{ public_url }}</a></p>
+<form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="secondary">Sair</button></form>
+<section class="card"><h2>Agenda do dia</h2><form method="get"><label>Data<input type="date" name="dia" value="{{ day }}"></label><button>Ver agenda</button></form>
+{% for a in appointments %}<article class="appointment"><b>{{ a.starts_at.astimezone(zone).strftime('%H:%M') }} · {{ a.service_name }}</b><p>{{ a.client_name }} · {{ a.client_phone }} · {{ {'confirmed':'Confirmado','cancelled':'Cancelado','completed':'Concluído'}.get(a.status, a.status) }}</p>{% if a.status == 'confirmed' %}<form method="post" action="/profissional/agendamentos/{{ a.id }}/cancelar" onsubmit="return confirm('Deseja cancelar este agendamento?')"><input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="danger">Cancelar</button></form>{% endif %}</article>{% else %}<p>Nenhum agendamento neste dia.</p>{% endfor %}</section>
+<section class="grid">{% include 'professional/services.html' %}{% include 'professional/schedule.html' %}</section>{% endblock %}

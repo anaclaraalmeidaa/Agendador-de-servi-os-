@@ -1,0 +1,1 @@
+`htmx.min.js` is the minified HTMX 2.0.4 browser distribution, vendored locally from the official project release (`htmx.org@2.0.4`). HTMX is distributed under the Zero-Clause BSD License (0BSD); see `HTMX-LICENSE.txt`. Source: https://github.com/bigskysoftware/htmx/blob/v2.0.4/LICENSE.

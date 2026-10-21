@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agendador}
+      POSTGRES_USER: ${POSTGRES_USER:-agendador}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-desenvolvimento-local}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql
+  web:
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://agendador:desenvolvimento-local@db:5432/agendador}
+      SESSION_SECRET: ${SESSION_SECRET:-desenvolvimento-local-trocar-esta-chave}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+      BASE_URL: ${BASE_URL:-http://localhost:8000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+  test-db:
+    image: postgres:18
+    profiles: ["test"]
+    environment:
+      POSTGRES_DB: agendador_test
+      POSTGRES_USER: agendador_test
+      POSTGRES_PASSWORD: test-only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+  tests:
+    profiles: ["test"]
+    build: .
+    entrypoint: ["pytest"]
+    command: ["-q"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://agendador_test:test-only@test-db:5432/agendador_test
+      SESSION_SECRET: test-secret
+    depends_on:
+      test-db:
+        condition: service_healthy
+volumes:
+  postgres_data:
